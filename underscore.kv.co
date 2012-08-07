@@ -1,0 +1,97 @@
+_     = require 'underscore'
+_nest = require 'underscore.nested'
+
+
+/**
+ * @namespace Functions for key-value pairs serialization (aka, www-form-encoding) of objects
+ */
+_kv = do
+    
+    /**
+     * Transforms an object to a string of URL-encoded KV-pairs (aka "www-form-encoding").
+     * 
+     * Note:
+     * - All values end up as a string, implying all type information is lost.
+     * - Both keys and values are URL-encoded once.
+     * 
+     * @param {Object} object The object to be serialized.
+     * @param {String} [item_delim='&'] String delimiting each pair.
+     * @param {String} [kv_delim='='] String delimiting key from value.
+     * @returns {String} Serialized and encoded KV-pairs.
+     */
+    toKV: (object, item_delim='&', kv_delim='=') ->
+        _.reduce do
+            object
+            (acc, v, k) ->
+                acc.push encodeURIComponent(k) + kv_delim + encodeURIComponent(v) if k
+                acc
+            []
+        .join item_delim
+    
+    /**
+     * Restores an object from a string of URL-encoded KV-pairs (aka "www-form-encoding").
+     * 
+     * Note:
+     * - All resulting values will be strings as all type information is lost.
+     * - Both keys and values will be URL-decoded once.
+     * 
+     * @param {String} string String of serialized KV-pairs.
+     * @param {String} [item_delim='&'] String delimiting each pair.
+     * @param {String} [kv_delim='='] String delimiting key from value.
+     * @returns {Object} Deserialized object containing the KV-pairs.
+     */
+    fromKV: (string, item_delim='&', kv_delim='=') ->
+        _.reduce do
+            string.split item_delim
+            (acc, pair) ->
+                idx = pair.indexOf kv_delim
+                if idx is not -1
+                    [k, v] = [pair.slice(0, idx), pair.slice(idx+1)]
+                else
+                    [k, v] = [pair, '']
+                acc[ decodeURIComponent k ] = decodeURIComponent v if k
+                acc
+            {}
+    
+    /**
+     * Copies and flattens a tree of sub-objects into namespaced keys on the target object, such
+     * that `{ "foo":{ "bar":1 } }` becomes `{ "foo.bar":1 }`.
+     * 
+     * @param {Object} source Object to collapse.
+     * @param {Object} [target={}] Target of the collapsed keys.
+     * @param {String} [prefix=''] Prefix applied to copied keys.
+     * @returns {Object} The collapsed object.
+     */
+    collapseObject: (source, target={}, prefix='') ->
+        prefix += '.' if prefix
+        _.each source, (v, k) ->
+            if _nest.isPlainObject v
+                _kv.collapseObject v, parent, prefix+k
+            else
+                parent[prefix+k] = v
+        parent
+    
+    /**
+     * Inverse of `_.collapseObject()` -- copies all keys onto the target object, expanding any
+     * dot-namespaced keys found, such that `{ "foo.bar":1 }` becomes `{ "foo":{ "bar":1 }}`.
+     * 
+     * @param {Object} source Collapsed source object.
+     * @param {Object} [target={}] Target of the uncollapsed keys.
+     * @returns {Object} The uncollapsed object -- either `target` or a new object.
+     */
+    uncollapseObject: (source, target={}) ->
+        _.reduce do
+            source
+            (acc, v, k) ->
+                _nest.setNested acc, k, v, {+ensure}
+                acc
+            target
+
+
+if module?
+    module.exports = _kv
+else if exports?
+    exports import _kv
+else if window?
+    window.UnderscoreKV = _kv
+
