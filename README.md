@@ -22,7 +22,7 @@ _.mixin require('underscore.kv');
 
 ## API
 
-### _.**toKV**(*object*[, *item_delim*='&'[, *kv_delim*='=']])
+### _.**toKV**( *object* [, *item_delim*='&' [, *kv_delim*='=' ]] )
 
 Transforms an object to a string of URL-encoded KV-pairs (aka "www-form-encoding").
 You may optionally override the delimiter inserted between items (`&` by default),
@@ -38,7 +38,7 @@ _.toKV({ "foo":"bar", "feh":1, "lol":true })
 ```
 
 
-### _.**fromKV**(*string*[, *item_delim*=`'&'`[, *kv_delim*=`'='`]])
+### _.**fromKV**( *string* [, *item_delim*=`'&'` [, *kv_delim*=`'='` ]])
 
 Restores an object from a string of URL-encoded KV-pairs (aka "www-form-encoding").
 You may optionally override the delimiter inserted between items (`&` by default),
@@ -54,7 +54,7 @@ _.fromKV("foo=bar&feh=1&lol=true")
 ```
 
 
-### _.**collapseObject**(*source*[, *target*=`{}`[, *prefix*=`''`]])
+### _.**collapseObject**( *source* [, *target*=`{}` [, *prefix*=`''` ]])
 
 Copies and flattens a tree of sub-objects into namespaced keys on the target object.
 
@@ -64,7 +64,7 @@ _.collapseObject({ "foo":{ "bar":1 } })
 ```
 
 
-### _.**uncollapseObject**(*source*[, *target*=`{}`])
+### _.**uncollapseObject**( *source* [, *target*=`{}` ])
 
 Inverse of `_.collapseObject()` &mdash; copies all keys onto the target object,
 expanding any dot-namespaced keys found.
